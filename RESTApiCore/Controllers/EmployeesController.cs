@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore; // For ExecuteSqlRaw
 using RESTApiCore.Data;
 using RESTApiCore.Models;
 using RESTApiCore.Models.Entities;
@@ -28,6 +30,16 @@ namespace RESTApiCore.Controllers
         [HttpPost]
         public IActionResult AddEmployee(AddEmployeeDto addEmployeeDto)
         {
+            var param = new[]
+            {
+                 new SqlParameter("@Name", addEmployeeDto.Name),
+                 new SqlParameter("@Email", addEmployeeDto.Email),
+                 new SqlParameter("@Phone", addEmployeeDto.Phone),
+                 new SqlParameter("@Salary", addEmployeeDto.Salary),
+            };
+
+            var insertedEmployee = dbContext.Employees.FromSqlRaw("EXEC AddEmployeeProc @Name, @Email, @Phone, @Salary", param).AsEnumerable().FirstOrDefault();
+
             var employeeEntity = new Employee() {
                 Name = addEmployeeDto.Name,
                 Email = addEmployeeDto.Email,
@@ -35,9 +47,9 @@ namespace RESTApiCore.Controllers
                 Salary = addEmployeeDto.Salary,
             };
 
-            dbContext.Employees.Add(employeeEntity);
-            dbContext.SaveChanges();
-            return StatusCode(201, new { message = "Employee Created Successfully", employeeEntity });
+            //dbContext.Employees.Add(employeeEntity);
+            //dbContext.SaveChanges();
+            return StatusCode(201, new { message = "Employee Created Successfully", insertedEmployee });
         }
 
         [HttpGet]
