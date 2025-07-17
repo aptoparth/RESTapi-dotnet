@@ -38,7 +38,7 @@ namespace RESTApiCore.Controllers
                  new SqlParameter("@Salary", addEmployeeDto.Salary),
             };
 
-            dbContext.Database.ExecuteSqlRaw("EXEC InsertEmployee @Name, @Email, @Phone, @Salary", param);
+            var insertedEmployee = dbContext.Employees.FromSqlRaw("EXEC AddEmployeeProc @Name, @Email, @Phone, @Salary", param).AsEnumerable().FirstOrDefault();
 
             var employeeEntity = new Employee() {
                 Name = addEmployeeDto.Name,
@@ -49,7 +49,7 @@ namespace RESTApiCore.Controllers
 
             //dbContext.Employees.Add(employeeEntity);
             //dbContext.SaveChanges();
-            return StatusCode(201, new { message = "Employee Created Successfully", employeeEntity });
+            return StatusCode(201, new { message = "Employee Created Successfully", insertedEmployee });
         }
 
         [HttpGet]
